@@ -1,0 +1,4 @@
+github.com/gempir/go-twitch-irc/v4 v4.0.0 h1:sHVIvbWOv9nHXGEErilclxASv0AaQEr/r/f9C0B9aO8=
+github.com/gempir/go-twitch-irc/v4 v4.0.0/go.mod h1:QsOMMAk470uxQ7EYD9GJBGAVqM/jDrXBNbuePfTauzg=
+github.com/sunspots/tmi v0.0.0-20180618222319-19fdab624b83 h1:KPl6t/dwaWegPmO5Os4WaUcRDr94Y5KZ2PrL7eZWQYw=
+github.com/sunspots/tmi v0.0.0-20180618222319-19fdab624b83/go.mod h1:Wg8E8Xy9YaO/FWxWOHrZptUyswvflRHVVydqb05Wkjc=
