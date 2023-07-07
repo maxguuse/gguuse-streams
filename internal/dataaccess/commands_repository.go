@@ -2,7 +2,8 @@ package dataaccess
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
+	"log"
 	"os"
 )
 
@@ -10,9 +11,9 @@ type command = string
 type answer = string
 
 type CommandsRepository interface {
-	GetCommandResponse(command string) answer
+	GetCommandResponse(string) answer
 	GetCommands() []command
-	UpdateCommand(command string, answer string)
+	UpdateCommand(string, string)
 	LoadCommands() error
 	SaveCommands() error
 }
@@ -49,48 +50,38 @@ func (r *commandsRepository) UpdateCommand(command string, answer string) {
 	}
 }
 
-func (r *commandsRepository) LoadCommands() error {
-	commandsFile, err := os.OpenFile(r.file, os.O_RDONLY|os.O_CREATE, 0644)
+func (r *commandsRepository) LoadCommands() (err error) {
 	defer func() {
-		err := commandsFile.Close()
 		if err != nil {
-			panic(err)
+			log.Println(err)
 		}
 	}()
-	if err != nil {
-		return err
-	}
 
-	byteValue, err := ioutil.ReadAll(commandsFile)
-	if err != nil {
-		return err
-	}
-
+	commandsFile, err := os.OpenFile(r.file, os.O_RDONLY|os.O_CREATE, 0644)
+	byteValue, err := io.ReadAll(commandsFile)
 	err = json.Unmarshal(byteValue, &r.commands)
+
 	if err != nil {
 		return err
 	}
-
+	defer commandsFile.Close()
 	return nil
 }
 
-func (r *commandsRepository) SaveCommands() error {
-	commandsFile, err := os.Create(r.file)
+func (r *commandsRepository) SaveCommands() (err error) {
 	defer func() {
-		err := commandsFile.Close()
 		if err != nil {
-			panic(err)
+			log.Println(err)
 		}
 	}()
-	if err != nil {
-		return err
-	}
 
+	commandsFile, err := os.Create(r.file)
 	byteValue, err := json.Marshal(r.commands)
+	_, err = commandsFile.Write(byteValue)
+
 	if err != nil {
 		return err
 	}
-
-	commandsFile.Write(byteValue)
+	defer commandsFile.Close()
 	return nil
 }

@@ -12,6 +12,8 @@ import (
 	"github.com/sunspots/tmi"
 )
 
+type twitch_tags = map[string]string
+
 var (
 	connection *tmi.Connection
 	commands   dataaccess.CommandsRepository
@@ -53,35 +55,52 @@ func processMessage(msg *tmi.Message) {
 	}
 }
 
-func processCommand(commandMsg string, tags map[string]string, channel string) (answer string) {
-	commandMsgSlice := strings.Split(commandMsg, " ")
+func processCommand(commandMsg string, tags twitch_tags, channel string) (answer string) {
+	command, args := parseCommand(commandMsg)
 
-	command := commandMsgSlice[0]
-	//args := commandMsgSlice[1:]
-
-	answerWith := func(msg string) string {
+	replyWith := func(msg string) string {
 		return fmt.Sprintf("@reply-parent-msg-id=%s PRIVMSG %s :%s", tags["id"], channel, msg)
 	}
 
-	switch command {
-	case "setmessage":
-		if tags["display-name"] != "GGuuse" {
-			return ""
-		}
-		commandToChange := commandMsgSlice[1]
-		newMessage := strings.Join(commandMsgSlice[2:], " ")
-
-		commands.UpdateCommand(commandToChange, newMessage)
-		commands.SaveCommands()
-		return answerWith(fmt.Sprintf("%s: %s", commandToChange, newMessage))
-	case "help":
-		cmds := commands.GetCommands()
-
-		return answerWith(fmt.Sprintf("Available commands: %s", strings.Join(cmds, " ")))
-	default:
-		answer := commands.GetCommandResponse(command)
-		return answerWith(answer)
+	handlers := map[string]func([]string, twitch_tags) string{
+		"setmessage": handleSetMessage,
+		"help":       handleHelp,
 	}
+	defaultHandler := func([]string, twitch_tags) string {
+		return commands.GetCommandResponse(command)
+	}
+
+	handler, ok := handlers[command]
+	if !ok {
+		handler = defaultHandler
+	}
+
+	return replyWith(handler(args, tags))
+}
+
+func parseCommand(commandMsg string) (command string, args []string) {
+	commandMsgSlice := strings.Split(commandMsg, " ")
+	return commandMsgSlice[0], commandMsgSlice[1:]
+}
+
+func handleSetMessage(args []string, tags twitch_tags) string {
+	if len(args) < 2 {
+		return "Usage: !setmessage <command> <message>"
+	}
+	if tags["display-name"] != "GGuuse" {
+		return ""
+	}
+	commandToChange := args[0]
+	newMessage := strings.Join(args[1:], " ")
+
+	commands.UpdateCommand(commandToChange, newMessage)
+	return fmt.Sprintf("%s: %s", commandToChange, newMessage)
+}
+
+func handleHelp(args []string, tags twitch_tags) string {
+	cmds := commands.GetCommands()
+
+	return fmt.Sprintf("Available commands: %s", strings.Join(cmds, " "))
 }
 
 func loadEnv() {
@@ -94,7 +113,7 @@ func loadEnv() {
 func main() {
 	loadEnv()
 
-	username := os.Getenv("USERNAME")
+	username := os.Getenv("NICK")
 	authToken := os.Getenv("AUTH_TOKEN")
 	connection = tmi.Connect(username, authToken)
 
@@ -106,7 +125,10 @@ func main() {
 	connection.Debug = true
 
 	commands = dataaccess.NewCommandsRepository()
-	commands.LoadCommands()
 
-	receiveMessages()
+	err := commands.LoadCommands()
+	if err == nil {
+		receiveMessages()
+	}
+	commands.SaveCommands()
 }
