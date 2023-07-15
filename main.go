@@ -29,19 +29,24 @@ func main() {
 	flag.Parse()
 	client.Join(*channel)
 
-	commands := dataaccess.NewCommandsRepository()
+	commands := dataaccess.NewJsonCommandsRepository(*channel)
 	err := commands.LoadCommands()
-	defer commands.SaveCommands()
 	if err != nil {
 		panic(err)
 	}
 
-	privateMessageHandler := handlers.NewPrivateMessageHandler(client, *channel, commands)
+	anns := dataaccess.NewJsonAnnouncmentsRepository(*channel)
+	err = anns.LoadAnnouncments()
+	if err != nil {
+		panic(err)
+	}
 
-	client.OnPrivateMessage(privateMessageHandler.Handle)
+	privateMessageHandler := handlers.NewPrivateMessageHandler(client, *channel, commands, anns)
+
 	client.OnConnect(func() {
 		log.Printf("Connected to #%s", *channel)
 	})
+	client.OnPrivateMessage(privateMessageHandler.Handle)
 
 	err = client.Connect()
 	if err != nil {
