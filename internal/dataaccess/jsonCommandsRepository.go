@@ -2,47 +2,36 @@ package dataaccess
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"os"
 )
 
-type command = string
-type answer = string
-
-type CommandsRepository interface {
-	GetCommandResponse(string) answer
-	GetCommands() []command
-	UpdateCommand(string, string)
-	LoadCommands() error
-	SaveCommands() error
-}
-
-type commandsRepository struct {
-	commands map[command]answer
+type jsonCommandsRepository struct {
+	commands map[string]string
 	file     string
 }
 
-func NewCommandsRepository() *commandsRepository {
-	return &commandsRepository{
-		commands: make(map[command]answer),
-		file:     "commands.json",
+func NewJsonCommandsRepository(channel string) *jsonCommandsRepository {
+	return &jsonCommandsRepository{
+		commands: make(map[string]string),
+		file:     fmt.Sprintf("%s_commands.json", channel),
 	}
 }
 
-func (r *commandsRepository) GetCommandResponse(command string) answer {
+func (r *jsonCommandsRepository) GetResponse(command string) string {
 	return r.commands[command]
 }
 
-func (r *commandsRepository) GetCommands() []command {
-	var commands []command
+func (r *jsonCommandsRepository) GetCommands() (cmds []string) {
 	for command := range r.commands {
-		commands = append(commands, command)
+		cmds = append(cmds, command)
 	}
-	return commands
+	return
 }
 
-func (r *commandsRepository) UpdateCommand(command string, answer string) {
+func (r *jsonCommandsRepository) UpdateCommand(command string, answer string) {
 	if answer == "" {
 		delete(r.commands, command)
 	} else {
@@ -50,7 +39,7 @@ func (r *commandsRepository) UpdateCommand(command string, answer string) {
 	}
 }
 
-func (r *commandsRepository) LoadCommands() (err error) {
+func (r *jsonCommandsRepository) LoadCommands() (err error) {
 	defer func() {
 		if err != nil {
 			log.Println(err)
@@ -58,6 +47,7 @@ func (r *commandsRepository) LoadCommands() (err error) {
 	}()
 
 	commandsFile, err := os.OpenFile(r.file, os.O_RDONLY|os.O_CREATE, 0644)
+	r.SaveCommands()
 	byteValue, err := io.ReadAll(commandsFile)
 	err = json.Unmarshal(byteValue, &r.commands)
 
@@ -68,7 +58,7 @@ func (r *commandsRepository) LoadCommands() (err error) {
 	return nil
 }
 
-func (r *commandsRepository) SaveCommands() (err error) {
+func (r *jsonCommandsRepository) SaveCommands() (err error) {
 	defer func() {
 		if err != nil {
 			log.Println(err)

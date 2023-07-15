@@ -31,5 +31,6 @@ func (c *setMessageCommand) GetAnswer() string {
 	newCommand := strings.Join(c.cmdArgs[1:], " ")
 
 	c.cmds.UpdateCommand(cmdToChange, newCommand)
+	c.cmds.SaveCommands()
 	return fmt.Sprintf("Changed command: %s. New answer: %s", cmdToChange, newCommand)
 }

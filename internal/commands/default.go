@@ -18,5 +18,5 @@ func NewDefaultCommand(
 }
 
 func (c *defaultCommand) GetAnswer() string {
-	return c.cmds.GetCommandResponse(c.command)
+	return c.cmds.GetResponse(c.command)
 }
