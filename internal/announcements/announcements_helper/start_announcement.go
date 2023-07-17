@@ -60,7 +60,7 @@ func sendAnnouncement(broadcasterId, moderatorId string, announcement string) {
 	}
 	resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		log.Println("Error sending announcement")
 	}
 }
