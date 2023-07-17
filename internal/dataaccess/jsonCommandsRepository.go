@@ -16,7 +16,7 @@ type jsonCommandsRepository struct {
 func NewJsonCommandsRepository(channel string) *jsonCommandsRepository {
 	return &jsonCommandsRepository{
 		commands: make(map[string]string),
-		file:     fmt.Sprintf("%s_commands.json", channel),
+		file:     fmt.Sprintf("json_commands/%s_commands.json", channel),
 	}
 }
 

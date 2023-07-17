@@ -52,3 +52,7 @@ go.work
 # Ignore all local history of files
 .history
 .ionide
+
+# Bot directories
+json_announcements/
+json_commands/
