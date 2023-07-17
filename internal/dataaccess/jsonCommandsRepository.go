@@ -47,8 +47,13 @@ func (r *jsonCommandsRepository) LoadCommands() (err error) {
 	}()
 
 	commandsFile, err := os.OpenFile(r.file, os.O_RDONLY|os.O_CREATE, 0644)
-	r.SaveCommands()
 	byteValue, err := io.ReadAll(commandsFile)
+
+	if !json.Valid(byteValue) {
+		r.SaveCommands()
+		byteValue, _ = io.ReadAll(commandsFile)
+	}
+
 	err = json.Unmarshal(byteValue, &r.commands)
 
 	if err != nil {

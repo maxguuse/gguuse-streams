@@ -32,6 +32,14 @@ func (c *jsonAnnouncementsRepository) GetAnnouncement(id string) (*announcements
 	return &ann, true
 }
 
+func (c *jsonAnnouncementsRepository) GetIds() []string {
+	keys := make([]string, 0, len(c.anns))
+	for k := range c.anns {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
 func (c *jsonAnnouncementsRepository) AddAnnouncement(ann announcements.Announcement) {
 	c.anns[ann.Id] = ann
 }
@@ -48,8 +56,13 @@ func (c *jsonAnnouncementsRepository) LoadAnnouncements() (err error) {
 	}()
 
 	annsFile, err := os.OpenFile(c.file, os.O_RDONLY|os.O_CREATE, 0644)
-	c.SaveAnnouncements()
 	byteValue, err := io.ReadAll(annsFile)
+
+	if !json.Valid(byteValue) {
+		c.SaveAnnouncements()
+		byteValue, _ = io.ReadAll(annsFile)
+	}
+
 	err = json.Unmarshal(byteValue, &c.anns)
 
 	if err != nil {

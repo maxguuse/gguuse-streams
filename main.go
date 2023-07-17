@@ -7,6 +7,7 @@ import (
 
 	"github.com/gempir/go-twitch-irc/v4"
 	"github.com/joho/godotenv"
+	"github.com/maxguuse/gguuse-streams/internal/announcements/announcements_helper"
 	"github.com/maxguuse/gguuse-streams/internal/dataaccess"
 	"github.com/maxguuse/gguuse-streams/internal/handlers"
 )
@@ -46,6 +47,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	announcements_helper.InitAnnouncements(
+		anns,
+		client,
+		*channel,
+	)
 
 	log.Println("Announcements source initialized")
 

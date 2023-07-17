@@ -7,6 +7,7 @@ import (
 
 	"github.com/gempir/go-twitch-irc/v4"
 	"github.com/maxguuse/gguuse-streams/internal/announcements"
+	"github.com/maxguuse/gguuse-streams/internal/announcements/announcements_helper"
 	"github.com/maxguuse/gguuse-streams/internal/dataaccess"
 )
 
@@ -48,21 +49,13 @@ func (c *newAnnouncementCommand) GetAnswer() string {
 
 	c.anns.AddAnnouncement(*ann)
 	c.anns.SaveAnnouncements()
-	go c.startAnnouncement(annId)
+
+	go announcements_helper.StartAnnouncement(
+		annId,
+		c.anns,
+		c.client,
+		c.channel,
+	)
 
 	return ""
-}
-
-func (c *newAnnouncementCommand) startAnnouncement(annId string) {
-	for {
-		ann, isExists := c.anns.GetAnnouncement(annId)
-		if !isExists {
-			break
-		}
-
-		// TODO: Replace this with HTTP request so announcement show like announcement
-		c.client.Say(c.channel, ann.Text)
-
-		time.Sleep(ann.RepetitionInterval)
-	}
 }
