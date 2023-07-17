@@ -41,7 +41,7 @@ func (h *privateMessageHandler) Handle(m twitch.PrivateMessage) {
 	time.Sleep(time.Second)
 
 	adminCommands := []string{
-		"setmessage", "newannouncement", "stopannouncement",
+		"setmessage", "newannouncement", "stopannouncement", "title",
 	}
 	commandFromMessage := strings.Split(m.Message[1:], " ")[0]
 	commandArgs := strings.Split(m.Message[1:], " ")[1:]
@@ -67,6 +67,7 @@ func (h *privateMessageHandler) Handle(m twitch.PrivateMessage) {
 		"setmessage":       commands.NewSetMessageCommand(h.cmds, commandArgs),
 		"newannouncement":  commands.NewNewAnnouncementCommand(h.anns, commandArgs, h.client, h.channel),
 		"stopannouncement": commands.NewStopAnnouncementCommand(h.anns, commandArgs),
+		"title": 	   commands.NewSetTitleCommand(commandArgs, h.client, h.channel),
 	}
 
 	commandHandler, ok := commandsHandlers[commandFromMessage]
