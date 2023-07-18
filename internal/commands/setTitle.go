@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"log"
+	"fmt"
 	"strings"
 
 	twitch_config "github.com/maxguuse/gguuse-streams/configs/twitch"
@@ -20,17 +20,16 @@ func NewSetTitleCommand(
 	}
 }
 
-func (c *newSetTitleCommand) GetAnswer() string {
+func (c *newSetTitleCommand) GetAnswer() (string, error) {
 	if len(c.cmdArgs) < 1 {
-		return "Usage: !title <title>"
+		return "Usage: !title <title>", nil
 	}
 
 	usersResp, err := twitch_config.ApiClient.GetUsers(&helix.UsersParams{
 		Logins: []string{twitch_config.Channel},
 	})
 	if err != nil {
-		log.Printf("Error fetching broadcaster id, error: %s", err)
-		return ""
+		return "", err
 	}
 	broadcasterId := usersResp.Data.Users[0].ID
 
@@ -41,9 +40,8 @@ func (c *newSetTitleCommand) GetAnswer() string {
 		Title:         title,
 	})
 	if err != nil {
-		log.Printf("Error changing stream title, error: %s", err)
-		return ""
+		return "", err
 	}
 
-	return ""
+	return fmt.Sprintf("Stream title changed to: %s", title), nil
 }

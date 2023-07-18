@@ -60,12 +60,14 @@ func (h *privateMessageHandler) Handle(m twitch.PrivateMessage) {
 	if !ok {
 		commandHandler = commands.NewDefaultCommand(commandFromMessage)
 	}
-	answer := commandHandler.GetAnswer()
+	answer, err := commandHandler.GetAnswer()
 
-	if answer == "" {
-		log.Printf("No such command: %s", commandFromMessage)
-	} else {
+	if answer != "" {
 		log.Printf("Replied with: %s", answer)
 		twitch_config.IrcClient.Reply(twitch_config.Channel, m.ID, answer)
+	} else if err != nil {
+		log.Printf("Couldn't answer to command, error occured: %s", err)
+	} else {
+		log.Println("Unknown error")
 	}
 }

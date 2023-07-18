@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/maxguuse/gguuse-streams/configs/repositories"
@@ -17,15 +18,19 @@ func NewSetMessageCommand(cmdArgs []string) *setMessageCommand {
 	}
 }
 
-func (c *setMessageCommand) GetAnswer() string {
+func (c *setMessageCommand) GetAnswer() (string, error) {
 	if len(c.cmdArgs) < 1 {
-		return "Usage: !setmessage <command> <message>"
+		return "Usage: !setmessage <command> <message>", nil
 	}
 
 	cmdToChange := c.cmdArgs[0]
 	newAnswer := strings.Join(c.cmdArgs[1:], " ")
 
 	repositories.Commands.UpdateCommand(cmdToChange, newAnswer)
-	repositories.Commands.SaveCommands()
-	return fmt.Sprintf("Changed command: %s. New answer: %s", cmdToChange, newAnswer)
+	err := repositories.Commands.SaveCommands()
+	if err != nil {
+		log.Fatalf("Error occured while saving commands: %s", err)
+	}
+
+	return fmt.Sprintf("Changed command: %s. New answer: %s", cmdToChange, newAnswer), nil
 }

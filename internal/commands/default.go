@@ -14,6 +14,6 @@ func NewDefaultCommand(
 	}
 }
 
-func (c *defaultCommand) GetAnswer() string {
-	return repositories.Commands.GetResponse(c.command)
+func (c *defaultCommand) GetAnswer() (string, error) {
+	return repositories.Commands.GetResponse(c.command), nil
 }
