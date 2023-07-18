@@ -3,16 +3,14 @@ package announcements_helper
 import (
 	"log"
 
-	"github.com/maxguuse/gguuse-streams/internal/dataaccess"
+	"github.com/maxguuse/gguuse-streams/configs/repositories"
 )
 
-func InitAnnouncements(
-	anns dataaccess.AnnouncementsRepository,
-) {
+func InitAnnouncements() {
 	log.Println("Started initialization of announcements")
-	ids := anns.GetIds()
-	for i := 0; i < len(ids); i++ {
-		go StartAnnouncement(ids[i], anns)
+	ids := repositories.Announcements.GetIds()
+	for _, annId := range ids {
+		go StartAnnouncement(annId)
 	}
 	log.Println("All announcements initialized")
 }

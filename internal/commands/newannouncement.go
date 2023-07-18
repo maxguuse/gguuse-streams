@@ -5,22 +5,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/maxguuse/gguuse-streams/configs/repositories"
 	"github.com/maxguuse/gguuse-streams/internal/announcements"
 	"github.com/maxguuse/gguuse-streams/internal/announcements/announcements_helper"
-	"github.com/maxguuse/gguuse-streams/internal/dataaccess"
 )
 
 type newAnnouncementCommand struct {
-	anns    dataaccess.AnnouncementsRepository
 	cmdArgs []string
 }
 
-func NewNewAnnouncementCommand(
-	anns dataaccess.AnnouncementsRepository,
-	cmdArgs []string,
-) *newAnnouncementCommand {
+func NewNewAnnouncementCommand(cmdArgs []string) *newAnnouncementCommand {
 	return &newAnnouncementCommand{
-		anns:    anns,
 		cmdArgs: cmdArgs,
 	}
 }
@@ -40,10 +35,10 @@ func (c *newAnnouncementCommand) GetAnswer() string {
 
 	ann := announcements.NewAnnouncement(annId, annRepTime, annText)
 
-	c.anns.AddAnnouncement(*ann)
-	c.anns.SaveAnnouncements()
+	repositories.Announcements.AddAnnouncement(*ann)
+	repositories.Announcements.SaveAnnouncements()
 
-	go announcements_helper.StartAnnouncement(annId, c.anns)
+	go announcements_helper.StartAnnouncement(annId)
 
 	return ""
 }

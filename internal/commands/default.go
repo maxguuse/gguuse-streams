@@ -1,22 +1,19 @@
 package commands
 
-import "github.com/maxguuse/gguuse-streams/internal/dataaccess"
+import "github.com/maxguuse/gguuse-streams/configs/repositories"
 
 type defaultCommand struct {
-	cmds    dataaccess.CommandsRepository
 	command string
 }
 
 func NewDefaultCommand(
-	cmds dataaccess.CommandsRepository,
 	command string,
 ) *defaultCommand {
 	return &defaultCommand{
-		cmds:    cmds,
 		command: command,
 	}
 }
 
 func (c *defaultCommand) GetAnswer() string {
-	return c.cmds.GetResponse(c.command)
+	return repositories.Commands.GetResponse(c.command)
 }

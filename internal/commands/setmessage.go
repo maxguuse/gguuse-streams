@@ -4,20 +4,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/maxguuse/gguuse-streams/internal/dataaccess"
+	"github.com/maxguuse/gguuse-streams/configs/repositories"
 )
 
 type setMessageCommand struct {
-	cmds    dataaccess.CommandsRepository
 	cmdArgs []string
 }
 
-func NewSetMessageCommand(
-	cmds dataaccess.CommandsRepository,
-	cmdArgs []string,
-) *setMessageCommand {
+func NewSetMessageCommand(cmdArgs []string) *setMessageCommand {
 	return &setMessageCommand{
-		cmds:    cmds,
 		cmdArgs: cmdArgs,
 	}
 }
@@ -28,9 +23,9 @@ func (c *setMessageCommand) GetAnswer() string {
 	}
 
 	cmdToChange := c.cmdArgs[0]
-	newCommand := strings.Join(c.cmdArgs[1:], " ")
+	newAnswer := strings.Join(c.cmdArgs[1:], " ")
 
-	c.cmds.UpdateCommand(cmdToChange, newCommand)
-	c.cmds.SaveCommands()
-	return fmt.Sprintf("Changed command: %s. New answer: %s", cmdToChange, newCommand)
+	repositories.Commands.UpdateCommand(cmdToChange, newAnswer)
+	repositories.Commands.SaveCommands()
+	return fmt.Sprintf("Changed command: %s. New answer: %s", cmdToChange, newAnswer)
 }

@@ -5,16 +5,13 @@ import (
 	"os"
 	"time"
 
+	"github.com/maxguuse/gguuse-streams/configs/repositories"
 	twitch_config "github.com/maxguuse/gguuse-streams/configs/twitch"
 
-	"github.com/maxguuse/gguuse-streams/internal/dataaccess"
 	"github.com/nicklaw5/helix/v2"
 )
 
-func StartAnnouncement(
-	annId string,
-	anns dataaccess.AnnouncementsRepository,
-) {
+func StartAnnouncement(annId string) {
 	usersResp, err := twitch_config.ApiClient.GetUsers(&helix.UsersParams{
 		Logins: []string{twitch_config.Channel, os.Getenv("NICK")},
 	})
@@ -45,7 +42,7 @@ func StartAnnouncement(
 
 	log.Printf("Started announcement '%s'", annId)
 	for {
-		ann, isExists := anns.GetAnnouncement(annId)
+		ann, isExists := repositories.Announcements.GetAnnouncement(annId)
 		if !isExists {
 			log.Printf("Announcement '%s' doesn't exist", annId)
 			return
