@@ -20,6 +20,6 @@ func NewHelpCommand(commandsSources ...[]string) *helpCommand {
 	}
 }
 
-func (c *helpCommand) GetAnswer() string {
-	return fmt.Sprintf("Available commands: %s", strings.Join(c.cmds, " "))
+func (c *helpCommand) GetAnswer() (string, error) {
+	return fmt.Sprintf("Available commands: %s", strings.Join(c.cmds, " ")), nil
 }

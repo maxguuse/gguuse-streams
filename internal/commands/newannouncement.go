@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -20,15 +22,15 @@ func NewNewAnnouncementCommand(cmdArgs []string) *newAnnouncementCommand {
 	}
 }
 
-func (c *newAnnouncementCommand) GetAnswer() string {
+func (c *newAnnouncementCommand) GetAnswer() (string, error) {
 	if len(c.cmdArgs) < 3 {
-		return "Usage: !newannouncement <id> <repetition_interval> <message>"
+		return "Usage: !newannouncement <id> <repetition_interval> <message>", nil
 	}
 
 	annId := c.cmdArgs[0]
 	rawAnnRepTime, err := strconv.Atoi(c.cmdArgs[1])
 	if err != nil {
-		return ""
+		return "", err
 	}
 	annRepTime := time.Duration(rawAnnRepTime) * time.Minute
 	annText := strings.Join(c.cmdArgs[2:], " ")
@@ -36,9 +38,12 @@ func (c *newAnnouncementCommand) GetAnswer() string {
 	ann := announcements.NewAnnouncement(annId, annRepTime, annText)
 
 	repositories.Announcements.AddAnnouncement(*ann)
-	repositories.Announcements.SaveAnnouncements()
+	err = repositories.Announcements.SaveAnnouncements()
+	if err != nil {
+		log.Fatalf("Error occured while saving announcements: %s", err)
+	}
 
 	go announcements_helper.StartAnnouncement(annId)
 
-	return ""
+	return fmt.Sprintf("Created new announcement with ID: %s", annId), nil
 }

@@ -1,5 +1,5 @@
 package commands
 
 type Command interface {
-	GetAnswer() string
+	GetAnswer() (string, error)
 }
