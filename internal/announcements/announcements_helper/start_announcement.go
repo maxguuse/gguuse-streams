@@ -1,66 +1,67 @@
 package announcements_helper
 
 import (
-	"bytes"
-	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"time"
-	"github.com/gempir/go-twitch-irc/v4"
+
+	twitch_config "github.com/maxguuse/gguuse-streams/configs/twitch"
+	"github.com/nicklaw5/helix/v2"
+
 	"github.com/maxguuse/gguuse-streams/internal/dataaccess"
-	"github.com/maxguuse/gguuse-streams/tools"
 )
 
 func StartAnnouncement(
 	annId string,
 	anns dataaccess.AnnouncementsRepository,
-	client *twitch.Client,
 	channel string,
 ) {
+	usersResp, err := twitch_config.ApiClient.GetUsers(&helix.UsersParams{
+		Logins: []string{channel, os.Getenv("NICK")},
+	})
+	if err != nil {
+		log.Printf("Error fetching broadcaster id: %s", err)
+		return
+	}
+
+	var broadcasterId, moderatorId string
+
+	for _, v := range usersResp.Data.Users {
+		if v.Login == channel {
+			broadcasterId = v.ID
+		} else if v.Login == os.Getenv("NICK") {
+			moderatorId = v.ID
+		}
+	}
+
+	if channel == os.Getenv("NICK") {
+		moderatorId = broadcasterId
+	}
+
+	sendChatAnnouncementParams := &helix.SendChatAnnouncementParams{
+		BroadcasterID: broadcasterId,
+		ModeratorID:   moderatorId,
+		Color:         "primary",
+	}
+
 	log.Printf("Started announcement '%s'", annId)
 	for {
 		ann, isExists := anns.GetAnnouncement(annId)
 		if !isExists {
-			break
+			log.Printf("Announcement '%s' doesn't exist", annId)
+			return
 		}
 
-		broadcasterId := tools.GetUserId(channel)
-		moderatorId := tools.GetUserId(os.Getenv("NICK"))
+		sendChatAnnouncementParams.Message = ann.Text
+		_, err = twitch_config.ApiClient.SendChatAnnouncement(sendChatAnnouncementParams)
 
-		sendAnnouncement(broadcasterId, moderatorId, ann.Text)
+		if err != nil {
+			log.Printf("Error sending announcement '%s', error: %s", ann.Id, err)
+			return
+		}
 
 		log.Printf("Sent announcement '%s'", annId)
 
 		time.Sleep(ann.RepetitionInterval)
-	}
-}
-
-
-func sendAnnouncement(broadcasterId, moderatorId string, announcement string) {
-	url := fmt.Sprintf("https://api.twitch.tv/helix/chat/announcements?broadcaster_id=%s&moderator_id=%s", broadcasterId, moderatorId)
-
-	formattedAnnouncement := fmt.Sprintf(`{"message":"%s","color":"primary"}`, announcement)
-	jsonAnnouncement := []byte(formattedAnnouncement)
-
-	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonAnnouncement))
-
-	oauth := os.Getenv("AUTH_TOKEN")
-	bearer := tools.BuildBearerFromOAuth(oauth)
-	req.Header.Set("Authorization", bearer)
-	req.Header.Set("Client-Id", os.Getenv("CLIENT_ID"))
-	req.Header.Set("Content-Type", "application/json")
-
-	httpClient := &http.Client{}
-
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		log.Println("Error sending get users request")
-		return
-	}
-	resp.Body.Close()
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		log.Println("Error sending announcement")
 	}
 }
