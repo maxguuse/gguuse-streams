@@ -3,6 +3,7 @@ package announcements_helper
 import (
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/maxguuse/gguuse-streams/configs/repositories"
@@ -16,21 +17,23 @@ func StartAnnouncement(annId string) {
 		Logins: []string{twitch_config.Channel, os.Getenv("NICK")},
 	})
 	if err != nil {
-		log.Printf("Error fetching broadcaster id: %s", err)
+		log.Fatalf("Couldn't make GetUsers request to Twitch API, error: %s", err)
+	} else if usersResp.ErrorMessage != "" {
+		log.Println(usersResp.ErrorMessage)
 		return
 	}
 
 	var broadcasterId, moderatorId string
 
 	for _, v := range usersResp.Data.Users {
-		if v.Login == twitch_config.Channel {
+		if strings.EqualFold(v.Login, twitch_config.Channel) {
 			broadcasterId = v.ID
-		} else if v.Login == os.Getenv("NICK") {
+		} else if strings.EqualFold(v.Login, os.Getenv("NICK")) {
 			moderatorId = v.ID
 		}
 	}
 
-	if twitch_config.Channel == os.Getenv("NICK") {
+	if strings.EqualFold(twitch_config.Channel, os.Getenv("NICK")) {
 		moderatorId = broadcasterId
 	}
 
@@ -49,10 +52,12 @@ func StartAnnouncement(annId string) {
 		}
 
 		sendChatAnnouncementParams.Message = ann.Text
-		_, err = twitch_config.ApiClient.SendChatAnnouncement(sendChatAnnouncementParams)
+		sendChatAnnouncementResp, err := twitch_config.ApiClient.SendChatAnnouncement(sendChatAnnouncementParams)
 
 		if err != nil {
-			log.Printf("Error sending announcement '%s', error: %s", ann.Id, err)
+			log.Fatalf("Couldn't make SendChatAnnouncement request to Twitch API, error: %s", err)
+		} else if sendChatAnnouncementResp.ErrorMessage != "" {
+			log.Println(sendChatAnnouncementResp.ErrorMessage)
 			return
 		}
 
