@@ -33,10 +33,6 @@ func StartAnnouncement(annId string) {
 		}
 	}
 
-	if strings.EqualFold(twitch_config.Channel, os.Getenv("NICK")) {
-		moderatorId = broadcasterId
-	}
-
 	sendChatAnnouncementParams := &helix.SendChatAnnouncementParams{
 		BroadcasterID: broadcasterId,
 		ModeratorID:   moderatorId,
@@ -52,7 +48,10 @@ func StartAnnouncement(annId string) {
 		}
 
 		sendChatAnnouncementParams.Message = ann.Text
+
+		twitch_config.ApiClient.SetUserAccessToken(os.Getenv("APP_TOKEN"))
 		sendChatAnnouncementResp, err := twitch_config.ApiClient.SendChatAnnouncement(sendChatAnnouncementParams)
+		twitch_config.ApiClient.SetUserAccessToken(os.Getenv("USER_TOKEN"))
 
 		if err != nil {
 			log.Fatalf("Couldn't make SendChatAnnouncement request to Twitch API, error: %s", err)

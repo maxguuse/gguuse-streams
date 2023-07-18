@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 
@@ -33,14 +34,19 @@ func main() {
 	log.Println("Environment variables loaded")
 
 	username := os.Getenv("NICK")
-	authToken := os.Getenv("AUTH_TOKEN")
-	twitchIrcClient := twitch.NewClient(username, authToken)
+	userToken := os.Getenv("USER_TOKEN")
+	appToken := os.Getenv("APP_TOKEN")
+
+	oauthAppToken := fmt.Sprintf("oauth:%s", appToken)
+
+	twitchIrcClient := twitch.NewClient(username, oauthAppToken)
 	log.Println("Twitch IRC client initialized")
 
 	twitchApiClient, err := helix.NewClient(&helix.Options{
-		UserAccessToken: authToken[6:],
-		AppAccessToken:  authToken[6:],
-		ClientID:        os.Getenv("CLIENT_ID"),
+		UserAccessToken: userToken,
+		AppAccessToken:  appToken,
+
+		ClientID: os.Getenv("CLIENT_ID"),
 	})
 	if err != nil {
 		panic(err)
