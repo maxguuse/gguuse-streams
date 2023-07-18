@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	twitch_config "github.com/maxguuse/gguuse-streams/configs/twitch"
+
 	"github.com/gempir/go-twitch-irc/v4"
 	"github.com/maxguuse/gguuse-streams/internal/commands"
 	"github.com/maxguuse/gguuse-streams/internal/dataaccess"
@@ -12,24 +14,17 @@ import (
 )
 
 type privateMessageHandler struct {
-	client  *twitch.Client
-	channel string
-
 	cmds dataaccess.CommandsRepository
 	anns dataaccess.AnnouncementsRepository
 }
 
 func NewPrivateMessageHandler(
-	twitchClient *twitch.Client,
-	twitchChannel string,
 	twitchCmds dataaccess.CommandsRepository,
 	twitchAnns dataaccess.AnnouncementsRepository,
 ) *privateMessageHandler {
 	return &privateMessageHandler{
-		client:  twitchClient,
-		channel: twitchChannel,
-		cmds:    twitchCmds,
-		anns:    twitchAnns,
+		cmds: twitchCmds,
+		anns: twitchAnns,
 	}
 }
 
@@ -65,9 +60,9 @@ func (h *privateMessageHandler) Handle(m twitch.PrivateMessage) {
 	commandsHandlers := map[string]commands.Command{
 		"help":             commands.NewHelpCommand(predefinedUserCommands, h.cmds.GetCommands()),
 		"setmessage":       commands.NewSetMessageCommand(h.cmds, commandArgs),
-		"newannouncement":  commands.NewNewAnnouncementCommand(h.anns, commandArgs, h.client, h.channel),
+		"newannouncement":  commands.NewNewAnnouncementCommand(h.anns, commandArgs),
 		"stopannouncement": commands.NewStopAnnouncementCommand(h.anns, commandArgs),
-		"title": 	   commands.NewSetTitleCommand(commandArgs, h.client, h.channel),
+		"title":            commands.NewSetTitleCommand(commandArgs),
 	}
 
 	commandHandler, ok := commandsHandlers[commandFromMessage]
@@ -80,6 +75,6 @@ func (h *privateMessageHandler) Handle(m twitch.PrivateMessage) {
 		log.Printf("No such command: %s", commandFromMessage)
 	} else {
 		log.Printf("Replied with: %s", answer)
-		h.client.Reply(h.channel, m.ID, answer)
+		twitch_config.IrcClient.Reply(twitch_config.Channel, m.ID, answer)
 	}
 }

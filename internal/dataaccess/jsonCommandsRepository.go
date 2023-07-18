@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 
+	twitch_config "github.com/maxguuse/gguuse-streams/configs/twitch"
+
 	"golang.org/x/exp/maps"
 )
 
@@ -15,10 +17,10 @@ type jsonCommandsRepository struct {
 	file     string
 }
 
-func NewJsonCommandsRepository(channel string) *jsonCommandsRepository {
+func NewJsonCommandsRepository() *jsonCommandsRepository {
 	return &jsonCommandsRepository{
 		commands: make(map[string]string),
-		file:     fmt.Sprintf("json_commands/%s_commands.json", channel),
+		file:     fmt.Sprintf("json_commands/%s_commands.json", twitch_config.Channel),
 	}
 }
 
