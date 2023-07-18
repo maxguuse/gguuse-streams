@@ -7,11 +7,13 @@ Just a simple twitch chatbot that I'm writing for learning purposes.
 It has following basic commands:
 - `help`: shows all available commands.
 - `setmessage`:
-  - Usage: !setmessage <command> <message> - updates `command` with `message`, if `message` is empty, deletes command
+  - Usage: !setmessage \<command> \<message> - updates `command` with `message`, if `message` is empty, deletes command.
 - `newannouncement`:
-  - Usage: !newannouncement <id> <repetition_interval> <message> - updates `id`-announcement with `message`. Announcement repeats every `repetition_interval` minutes. `id` can be any combination of any symbols.
+  - Usage: !newannouncement \<id> \<repetition_interval> \<message> - updates `id`-announcement with `message`. Announcement repeats every `repetition_interval` minutes. `id` can be any combination of any symbols.
 - `stopannouncement`:
-  - Usage: !stopannouncement <id> - stops announcement `id`.
+  - Usage: !stopannouncement \<id> - stops announcement `id`.
+- `title`:
+  - Usage: !title \<new title> - sets stream title to `new title`.
 
 Developer can predefine some commands right in code. <br/>
 Commands created with `setmessage` stored in directory `json_commands` in files named `<channel>_commands.json`. <br/>
