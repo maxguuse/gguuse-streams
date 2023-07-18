@@ -1,36 +1,52 @@
 package commands
 
 import (
+	"log"
 	"strings"
-	"github.com/gempir/go-twitch-irc/v4"
-	"github.com/maxguuse/gguuse-streams/tools"
 
+	twitch_config "github.com/maxguuse/gguuse-streams/configs/twitch"
+	"github.com/nicklaw5/helix/v2"
 )
 
 type newSetTitleCommand struct {
 	cmdArgs []string
-	client  *twitch.Client
 	channel string
 }
 
 func NewSetTitleCommand(
 	cmdArgs []string,
-	client *twitch.Client,
 	channel string,
 ) *newSetTitleCommand {
 	return &newSetTitleCommand{
 		cmdArgs: cmdArgs,
-		client:  client,
 		channel: channel,
 	}
 }
 
-func (c *newSetTitleCommand) GetAnswer() string{
-	if (len(c.cmdArgs) < 1){
+func (c *newSetTitleCommand) GetAnswer() string {
+	if len(c.cmdArgs) < 1 {
 		return "Usage: !title <title>"
 	}
-	broadcasterId := tools.GetUserId(c.channel)
+
+	usersResp, err := twitch_config.ApiClient.GetUsers(&helix.UsersParams{
+		Logins: []string{c.channel},
+	})
+	if err != nil {
+		log.Printf("Error fetching broadcaster id, error: %s", err)
+		return ""
+	}
+	broadcasterId := usersResp.Data.Users[0].ID
+
 	title := strings.Join(c.cmdArgs[0:], " ")
-	tools.SetTitle(broadcasterId, title)
+
+	_, err = twitch_config.ApiClient.EditChannelInformation(&helix.EditChannelInformationParams{
+		BroadcasterID: broadcasterId,
+		Title:         title,
+	})
+	if err != nil {
+		log.Printf("Error changing stream title, error: %s", err)
+		return ""
+	}
+
 	return ""
 }
