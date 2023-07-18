@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/maxguuse/gguuse-streams/internal/announcements"
+	"golang.org/x/exp/maps"
 )
 
 type jsonAnnouncementsRepository struct {
@@ -33,11 +34,7 @@ func (c *jsonAnnouncementsRepository) GetAnnouncement(id string) (*announcements
 }
 
 func (c *jsonAnnouncementsRepository) GetIds() []string {
-	keys := make([]string, 0, len(c.anns))
-	for k := range c.anns {
-		keys = append(keys, k)
-	}
-	return keys
+	return maps.Keys(c.anns)
 }
 
 func (c *jsonAnnouncementsRepository) AddAnnouncement(ann announcements.Announcement) {

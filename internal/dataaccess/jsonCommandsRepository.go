@@ -6,6 +6,8 @@ import (
 	"io"
 	"log"
 	"os"
+
+	"golang.org/x/exp/maps"
 )
 
 type jsonCommandsRepository struct {
@@ -25,10 +27,7 @@ func (r *jsonCommandsRepository) GetResponse(command string) string {
 }
 
 func (r *jsonCommandsRepository) GetCommands() (cmds []string) {
-	for command := range r.commands {
-		cmds = append(cmds, command)
-	}
-	return
+	return maps.Keys(r.commands)
 }
 
 func (r *jsonCommandsRepository) UpdateCommand(command string, answer string) {
