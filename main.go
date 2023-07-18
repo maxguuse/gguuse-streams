@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/maxguuse/gguuse-streams/configs/repositories"
 	twitch_config "github.com/maxguuse/gguuse-streams/configs/twitch"
 
 	"github.com/gempir/go-twitch-irc/v4"
@@ -67,11 +68,14 @@ func main() {
 	}
 	log.Println("Announcements source initialized")
 
-	announcements_helper.InitAnnouncements(anns)
+	repositories.Commands = commands
+	repositories.Announcements = anns
+
+	announcements_helper.InitAnnouncements()
 
 	twitch_config.IrcClient.Join(twitch_config.Channel)
 
-	privateMessageHandler := handlers.NewPrivateMessageHandler(commands, anns)
+	privateMessageHandler := handlers.NewPrivateMessageHandler()
 
 	twitch_config.IrcClient.OnConnect(func() {
 		log.Printf("Connected to #%s", twitch_config.Channel)

@@ -5,27 +5,18 @@ import (
 	"strings"
 	"time"
 
+	"github.com/maxguuse/gguuse-streams/configs/repositories"
 	twitch_config "github.com/maxguuse/gguuse-streams/configs/twitch"
 
 	"github.com/gempir/go-twitch-irc/v4"
 	"github.com/maxguuse/gguuse-streams/internal/commands"
-	"github.com/maxguuse/gguuse-streams/internal/dataaccess"
 	"golang.org/x/exp/slices"
 )
 
-type privateMessageHandler struct {
-	cmds dataaccess.CommandsRepository
-	anns dataaccess.AnnouncementsRepository
-}
+type privateMessageHandler struct{}
 
-func NewPrivateMessageHandler(
-	twitchCmds dataaccess.CommandsRepository,
-	twitchAnns dataaccess.AnnouncementsRepository,
-) *privateMessageHandler {
-	return &privateMessageHandler{
-		cmds: twitchCmds,
-		anns: twitchAnns,
-	}
+func NewPrivateMessageHandler() *privateMessageHandler {
+	return &privateMessageHandler{}
 }
 
 func (h *privateMessageHandler) Handle(m twitch.PrivateMessage) {
@@ -58,16 +49,16 @@ func (h *privateMessageHandler) Handle(m twitch.PrivateMessage) {
 	}
 
 	commandsHandlers := map[string]commands.Command{
-		"help":             commands.NewHelpCommand(predefinedUserCommands, h.cmds.GetCommands()),
-		"setmessage":       commands.NewSetMessageCommand(h.cmds, commandArgs),
-		"newannouncement":  commands.NewNewAnnouncementCommand(h.anns, commandArgs),
-		"stopannouncement": commands.NewStopAnnouncementCommand(h.anns, commandArgs),
+		"help":             commands.NewHelpCommand(predefinedUserCommands, repositories.Commands.GetCommands()),
+		"setmessage":       commands.NewSetMessageCommand(commandArgs),
+		"newannouncement":  commands.NewNewAnnouncementCommand(commandArgs),
+		"stopannouncement": commands.NewStopAnnouncementCommand(commandArgs),
 		"title":            commands.NewSetTitleCommand(commandArgs),
 	}
 
 	commandHandler, ok := commandsHandlers[commandFromMessage]
 	if !ok {
-		commandHandler = commands.NewDefaultCommand(h.cmds, commandFromMessage)
+		commandHandler = commands.NewDefaultCommand(commandFromMessage)
 	}
 	answer := commandHandler.GetAnswer()
 

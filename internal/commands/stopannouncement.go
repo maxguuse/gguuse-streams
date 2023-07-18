@@ -3,20 +3,15 @@ package commands
 import (
 	"fmt"
 
-	"github.com/maxguuse/gguuse-streams/internal/dataaccess"
+	"github.com/maxguuse/gguuse-streams/configs/repositories"
 )
 
 type stopAnnouncementCommand struct {
-	anns    dataaccess.AnnouncementsRepository
 	cmdArgs []string
 }
 
-func NewStopAnnouncementCommand(
-	anns dataaccess.AnnouncementsRepository,
-	cmdArgs []string,
-) *stopAnnouncementCommand {
+func NewStopAnnouncementCommand(cmdArgs []string) *stopAnnouncementCommand {
 	return &stopAnnouncementCommand{
-		anns:    anns,
 		cmdArgs: cmdArgs,
 	}
 }
@@ -26,13 +21,13 @@ func (c *stopAnnouncementCommand) GetAnswer() string {
 		return "Usage: !stopannouncement <id>"
 	}
 
-	ann, isExists := c.anns.GetAnnouncement(c.cmdArgs[0])
+	ann, isExists := repositories.Announcements.GetAnnouncement(c.cmdArgs[0])
 	if !isExists {
 		return fmt.Sprintf("Announcement with ID: %s doesn't exist", c.cmdArgs[0])
 	}
 
-	c.anns.RemoveAnnouncement(ann.Id)
-	c.anns.SaveAnnouncements()
+	repositories.Announcements.RemoveAnnouncement(ann.Id)
+	repositories.Announcements.SaveAnnouncements()
 
 	return fmt.Sprintf("Announcement with ID: %s has been deleted", c.cmdArgs[0])
 }
