@@ -5,11 +5,14 @@ import (
 	"log"
 	"os"
 
+	twitch_config "github.com/maxguuse/gguuse-streams/configs/twitch"
+
 	"github.com/gempir/go-twitch-irc/v4"
 	"github.com/joho/godotenv"
 	"github.com/maxguuse/gguuse-streams/internal/announcements/announcements_helper"
 	"github.com/maxguuse/gguuse-streams/internal/dataaccess"
 	"github.com/maxguuse/gguuse-streams/internal/handlers"
+	"github.com/nicklaw5/helix/v2"
 )
 
 func loadEnv() {
@@ -20,26 +23,36 @@ func loadEnv() {
 }
 
 func main() {
+	channel := flag.String("channel", "gguuse", "Channel to join")
+	flag.Parse()
+
 	log.Println("Starting bot...")
 
 	loadEnv()
+	log.Println("Environment variables loaded")
 
 	username := os.Getenv("NICK")
 	authToken := os.Getenv("AUTH_TOKEN")
-	client := twitch.NewClient(username, authToken)
+	twitch_config.IrcClient = twitch.NewClient(username, authToken)
+	twitch_config.IrcClient.Join(*channel)
+	log.Println("Twitch IRC client initialized")
 
-	log.Println("Environment variables loaded")
-
-	channel := flag.String("channel", "gguuse", "Channel to join")
-	flag.Parse()
-	client.Join(*channel)
-
-	commands := dataaccess.NewJsonCommandsRepository(*channel)
-	err := commands.LoadCommands()
+	twitchApiClient, err := helix.NewClient(&helix.Options{
+		UserAccessToken: authToken[6:],
+		AppAccessToken:  authToken[6:],
+		ClientID:        os.Getenv("CLIENT_ID"),
+	})
 	if err != nil {
 		panic(err)
 	}
+	twitch_config.ApiClient = twitchApiClient
+	log.Println("Twitch API client initialized")
 
+	commands := dataaccess.NewJsonCommandsRepository(*channel)
+	err = commands.LoadCommands()
+	if err != nil {
+		panic(err)
+	}
 	log.Println("Commands source initialized")
 
 	anns := dataaccess.NewJsonAnnouncementsRepository(*channel)
@@ -47,23 +60,18 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	announcements_helper.InitAnnouncements(
-		anns,
-		client,
-		*channel,
-	)
-
 	log.Println("Announcements source initialized")
 
-	privateMessageHandler := handlers.NewPrivateMessageHandler(client, *channel, commands, anns)
+	announcements_helper.InitAnnouncements(anns, *channel)
 
-	client.OnConnect(func() {
+	privateMessageHandler := handlers.NewPrivateMessageHandler(*channel, commands, anns)
+
+	twitch_config.IrcClient.OnConnect(func() {
 		log.Printf("Connected to #%s", *channel)
 	})
-	client.OnPrivateMessage(privateMessageHandler.Handle)
+	twitch_config.IrcClient.OnPrivateMessage(privateMessageHandler.Handle)
 
-	err = client.Connect()
+	err = twitch_config.IrcClient.Connect()
 	if err != nil {
 		panic(err)
 	}
