@@ -10,16 +10,13 @@ import (
 
 type newSetTitleCommand struct {
 	cmdArgs []string
-	channel string
 }
 
 func NewSetTitleCommand(
 	cmdArgs []string,
-	channel string,
 ) *newSetTitleCommand {
 	return &newSetTitleCommand{
 		cmdArgs: cmdArgs,
-		channel: channel,
 	}
 }
 
@@ -29,7 +26,7 @@ func (c *newSetTitleCommand) GetAnswer() string {
 	}
 
 	usersResp, err := twitch_config.ApiClient.GetUsers(&helix.UsersParams{
-		Logins: []string{c.channel},
+		Logins: []string{twitch_config.Channel},
 	})
 	if err != nil {
 		log.Printf("Error fetching broadcaster id, error: %s", err)

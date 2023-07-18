@@ -6,18 +6,17 @@ import (
 	"time"
 
 	twitch_config "github.com/maxguuse/gguuse-streams/configs/twitch"
-	"github.com/nicklaw5/helix/v2"
 
 	"github.com/maxguuse/gguuse-streams/internal/dataaccess"
+	"github.com/nicklaw5/helix/v2"
 )
 
 func StartAnnouncement(
 	annId string,
 	anns dataaccess.AnnouncementsRepository,
-	channel string,
 ) {
 	usersResp, err := twitch_config.ApiClient.GetUsers(&helix.UsersParams{
-		Logins: []string{channel, os.Getenv("NICK")},
+		Logins: []string{twitch_config.Channel, os.Getenv("NICK")},
 	})
 	if err != nil {
 		log.Printf("Error fetching broadcaster id: %s", err)
@@ -27,14 +26,14 @@ func StartAnnouncement(
 	var broadcasterId, moderatorId string
 
 	for _, v := range usersResp.Data.Users {
-		if v.Login == channel {
+		if v.Login == twitch_config.Channel {
 			broadcasterId = v.ID
 		} else if v.Login == os.Getenv("NICK") {
 			moderatorId = v.ID
 		}
 	}
 
-	if channel == os.Getenv("NICK") {
+	if twitch_config.Channel == os.Getenv("NICK") {
 		moderatorId = broadcasterId
 	}
 

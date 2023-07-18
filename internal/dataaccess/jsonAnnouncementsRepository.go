@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 
+	twitch_config "github.com/maxguuse/gguuse-streams/configs/twitch"
+
 	"github.com/maxguuse/gguuse-streams/internal/announcements"
 	"golang.org/x/exp/maps"
 )
@@ -16,10 +18,10 @@ type jsonAnnouncementsRepository struct {
 	file string
 }
 
-func NewJsonAnnouncementsRepository(channel string) *jsonAnnouncementsRepository {
+func NewJsonAnnouncementsRepository() *jsonAnnouncementsRepository {
 	return &jsonAnnouncementsRepository{
 		anns: make(map[string]announcements.Announcement),
-		file: fmt.Sprintf("json_announcements/%s_announcements.json", channel),
+		file: fmt.Sprintf("json_announcements/%s_announcements.json", twitch_config.Channel),
 	}
 }
 

@@ -33,8 +33,7 @@ func main() {
 
 	username := os.Getenv("NICK")
 	authToken := os.Getenv("AUTH_TOKEN")
-	twitch_config.IrcClient = twitch.NewClient(username, authToken)
-	twitch_config.IrcClient.Join(*channel)
+	twitchIrcClient := twitch.NewClient(username, authToken)
 	log.Println("Twitch IRC client initialized")
 
 	twitchApiClient, err := helix.NewClient(&helix.Options{
@@ -48,26 +47,34 @@ func main() {
 	twitch_config.ApiClient = twitchApiClient
 	log.Println("Twitch API client initialized")
 
-	commands := dataaccess.NewJsonCommandsRepository(*channel)
+	twitch_config.IrcClient = twitchIrcClient
+	twitch_config.ApiClient = twitchApiClient
+	twitch_config.Channel = *channel
+
+	log.Println("Twitch config sat up")
+
+	commands := dataaccess.NewJsonCommandsRepository()
 	err = commands.LoadCommands()
 	if err != nil {
 		panic(err)
 	}
 	log.Println("Commands source initialized")
 
-	anns := dataaccess.NewJsonAnnouncementsRepository(*channel)
+	anns := dataaccess.NewJsonAnnouncementsRepository()
 	err = anns.LoadAnnouncements()
 	if err != nil {
 		panic(err)
 	}
 	log.Println("Announcements source initialized")
 
-	announcements_helper.InitAnnouncements(anns, *channel)
+	announcements_helper.InitAnnouncements(anns)
 
-	privateMessageHandler := handlers.NewPrivateMessageHandler(*channel, commands, anns)
+	twitch_config.IrcClient.Join(twitch_config.Channel)
+
+	privateMessageHandler := handlers.NewPrivateMessageHandler(commands, anns)
 
 	twitch_config.IrcClient.OnConnect(func() {
-		log.Printf("Connected to #%s", *channel)
+		log.Printf("Connected to #%s", twitch_config.Channel)
 	})
 	twitch_config.IrcClient.OnPrivateMessage(privateMessageHandler.Handle)
 

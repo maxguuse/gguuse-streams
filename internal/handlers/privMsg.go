@@ -14,21 +14,17 @@ import (
 )
 
 type privateMessageHandler struct {
-	channel string
-
 	cmds dataaccess.CommandsRepository
 	anns dataaccess.AnnouncementsRepository
 }
 
 func NewPrivateMessageHandler(
-	twitchChannel string,
 	twitchCmds dataaccess.CommandsRepository,
 	twitchAnns dataaccess.AnnouncementsRepository,
 ) *privateMessageHandler {
 	return &privateMessageHandler{
-		channel: twitchChannel,
-		cmds:    twitchCmds,
-		anns:    twitchAnns,
+		cmds: twitchCmds,
+		anns: twitchAnns,
 	}
 }
 
@@ -64,9 +60,9 @@ func (h *privateMessageHandler) Handle(m twitch.PrivateMessage) {
 	commandsHandlers := map[string]commands.Command{
 		"help":             commands.NewHelpCommand(predefinedUserCommands, h.cmds.GetCommands()),
 		"setmessage":       commands.NewSetMessageCommand(h.cmds, commandArgs),
-		"newannouncement":  commands.NewNewAnnouncementCommand(h.anns, commandArgs, h.channel),
+		"newannouncement":  commands.NewNewAnnouncementCommand(h.anns, commandArgs),
 		"stopannouncement": commands.NewStopAnnouncementCommand(h.anns, commandArgs),
-		"title":            commands.NewSetTitleCommand(commandArgs, h.channel),
+		"title":            commands.NewSetTitleCommand(commandArgs),
 	}
 
 	commandHandler, ok := commandsHandlers[commandFromMessage]
@@ -79,6 +75,6 @@ func (h *privateMessageHandler) Handle(m twitch.PrivateMessage) {
 		log.Printf("No such command: %s", commandFromMessage)
 	} else {
 		log.Printf("Replied with: %s", answer)
-		twitch_config.IrcClient.Reply(h.channel, m.ID, answer)
+		twitch_config.IrcClient.Reply(twitch_config.Channel, m.ID, answer)
 	}
 }

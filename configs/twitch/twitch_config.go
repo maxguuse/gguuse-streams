@@ -8,4 +8,6 @@ import (
 var (
 	IrcClient *twitch.Client
 	ApiClient *helix.Client
+
+	Channel string
 )

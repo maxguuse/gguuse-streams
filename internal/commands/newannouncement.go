@@ -13,18 +13,15 @@ import (
 type newAnnouncementCommand struct {
 	anns    dataaccess.AnnouncementsRepository
 	cmdArgs []string
-	channel string
 }
 
 func NewNewAnnouncementCommand(
 	anns dataaccess.AnnouncementsRepository,
 	cmdArgs []string,
-	channel string,
 ) *newAnnouncementCommand {
 	return &newAnnouncementCommand{
 		anns:    anns,
 		cmdArgs: cmdArgs,
-		channel: channel,
 	}
 }
 
@@ -46,7 +43,7 @@ func (c *newAnnouncementCommand) GetAnswer() string {
 	c.anns.AddAnnouncement(*ann)
 	c.anns.SaveAnnouncements()
 
-	go announcements_helper.StartAnnouncement(annId, c.anns, c.channel)
+	go announcements_helper.StartAnnouncement(annId, c.anns)
 
 	return ""
 }
