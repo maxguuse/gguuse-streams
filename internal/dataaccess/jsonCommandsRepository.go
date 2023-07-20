@@ -21,7 +21,7 @@ func NewJsonCommandsRepository() *jsonCommandsRepository {
 	if os.Getenv("GO_ENV") == "Production" {
 		return &jsonCommandsRepository{
 			commands: make(map[string]string),
-			file:     fmt.Sprintf("/home/gguuse/go/src/gguuse/json_commands/%s_commands.json", twitch_config.Channel),
+			file:     fmt.Sprintf("/home/gguuse/go/src/gguuse-streams/json_commands/%s_commands.json", twitch_config.Channel),
 		}
 	} else {
 		return &jsonCommandsRepository{

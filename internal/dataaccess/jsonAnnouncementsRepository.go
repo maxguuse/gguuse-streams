@@ -22,7 +22,7 @@ func NewJsonAnnouncementsRepository() *jsonAnnouncementsRepository {
 	if os.Getenv("GO_ENV") == "Production" {
 		return &jsonAnnouncementsRepository{
 			anns: make(map[string]announcements.Announcement),
-			file: fmt.Sprintf("/home/gguuse/go/src/gguuse/json_announcements/%s_announcements.json", twitch_config.Channel),
+			file: fmt.Sprintf("/home/gguuse/go/src/gguuse-streams/json_announcements/%s_announcements.json", twitch_config.Channel),
 		}
 	} else {
 		return &jsonAnnouncementsRepository{
