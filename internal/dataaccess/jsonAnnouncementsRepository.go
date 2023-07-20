@@ -19,9 +19,16 @@ type jsonAnnouncementsRepository struct {
 }
 
 func NewJsonAnnouncementsRepository() *jsonAnnouncementsRepository {
-	return &jsonAnnouncementsRepository{
-		anns: make(map[string]announcements.Announcement),
-		file: fmt.Sprintf("json_announcements/%s_announcements.json", twitch_config.Channel),
+	if os.Getenv("GO_ENV") == "Production" {
+		return &jsonAnnouncementsRepository{
+			anns: make(map[string]announcements.Announcement),
+			file: fmt.Sprintf("/home/gguuse/go/src/gguuse/json_announcements/%s_announcements.json", twitch_config.Channel),
+		}
+	} else {
+		return &jsonAnnouncementsRepository{
+			anns: make(map[string]announcements.Announcement),
+			file: fmt.Sprintf("json_announcements/%s_announcements.json", twitch_config.Channel),
+		}
 	}
 }
 
