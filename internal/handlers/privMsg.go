@@ -24,8 +24,6 @@ func (h *privateMessageHandler) Handle(m twitch.PrivateMessage) {
 		return
 	}
 
-	time.Sleep(time.Second)
-
 	adminCommands := []string{
 		"setmessage", "newannouncement", "stopannouncement", "title",
 	}
