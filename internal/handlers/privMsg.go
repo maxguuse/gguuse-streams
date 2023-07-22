@@ -3,7 +3,6 @@ package handlers
 import (
 	"log"
 	"strings"
-	"time"
 
 	"github.com/maxguuse/gguuse-streams/configs/repositories"
 	twitch_config "github.com/maxguuse/gguuse-streams/configs/twitch"
